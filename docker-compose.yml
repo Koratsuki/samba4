@@ -1,0 +1,24 @@
+---
+services:
+  samba:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: samba4:latest
+    container_name: samba4-ct
+    privileged: true
+    restart: unless-stopped
+    env_file:
+      - ./config/vars.env
+    volumes:
+      - ./config/samba:/etc/samba
+      - ./data/samba:/usr/local/samba/private
+    ports:
+      - 389:389
+      - 636:636
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 /usr/local/samba/bin/samba-tool domain info 127.0.0.1 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
